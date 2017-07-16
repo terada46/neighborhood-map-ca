@@ -1,12 +1,15 @@
 'use strict';
 
 function initApp() {
+
+	//创建视图模型
 	var ViewModel = function() {
 		var self = this;
 		self.markers = new ko.observableArray();
 		self.search = ko.observable('');
 		self.InfoMarker = null;
 
+		//创建地图
 		self.map = new google.maps.Map(document.getElementById('map'), {
 			center: {
 				lat: 37.8068403,
@@ -14,18 +17,25 @@ function initApp() {
 			},
 			zoom: 11,
 			mapTypeControl: true,
+			gestureHandling: 'cooperative',
 			mapTypeControlOptions: {
 				position: google.maps.ControlPosition.TOP_CENTER
 			}
 		});
 
+		//当点击列表项时，仅传递id去执行flickrPhoto
 		self.updateList = function(id) {
 			self.flickrPhoto(id, null);
-		}
+		};
 
-
+		//根据所传递marker_id还是marker去响应操作，并打开对应marker的infowindow
+		//当点击列表视图的某一项地点，仅传递mark_id参数，先获取此地点marker，然后改变marker样式，打开infowindow
+		//当创建marker时，为每一个marker绑定点击事件时，仅传递marker参数，点击时直接获取第三方信息，打开infowindow
+		//通过marker的title搜索来自flickr的图片和获取wikipedia的描述链接，显示在infowindow中。
 		self.flickrPhoto = function(mark_id, marker) {
 			var selectedMarker = null;
+
+			//仅当点击列表视图时，才会传递marker_id，以此获取marker，并改变样式。
 			if (mark_id != null) {
 				for (var i = 0; i < self.markers().length; i++) {
 					if (self.markers()[i].mark_id === mark_id) {			
@@ -43,16 +53,19 @@ function initApp() {
 					}
 				};
 			} else {
+
+			//创建marker时绑定点击事件，仅传递marker参数，直接以此marker为所选marker
 				selectedMarker = marker;
 				for (var i = 0; i < self.markers().length; i++) {
 						self.markers()[i].setIcon();
 				};
-			}
+			};
 
+
+			//同时使用flickr和wikipedia的API，获取所需的数据
 			var contentString = '<div id="flickr-content">' ;
 			var flickrURL = 'https://api.flickr.com/services/rest/';
 			var wikiURL = 'https://en.wikipedia.org/w/api.php';
-
 			$.when(
 				$.getJSON( flickrURL, {
 					'method': 'flickr.photos.search',
@@ -70,7 +83,8 @@ function initApp() {
 					'origin': '*'
 				})
 			)
-			.then(function(result1, result2){ 
+			//成功获取后处理数据，提取相片、描述和链接，创建infowindow里显示的html
+			.then(function(result1, result2) { 
 				console.log(result2);
 				var response1 = result1[2].responseJSON;
 				var response2 = result2[2].responseJSON;
@@ -83,13 +97,16 @@ function initApp() {
 					var photoTitle = '<span>' + photo.title + '</span>';
 					contentString += 'Search Photo of "' + selectedMarker.title + '" from Flickr' +
 							img + photoTitle;
+
+				//如果flickr响应失败，提示错误信息
 				} else if (response1.stat == 'fail') {
 					contentString += '<span>Unable to load photos now. Please try again later</span><br>';
 				};
-
+				//由于wiki的opensearch并不返回响应状态，在这里并没有处理wiki的错误信息
+				//另一个原因是在创建地点marker时，已经将地点的标题设置为wiki页面标准的文本标题
+				//因此只要上面成功返回result，就可以确保获取正确的描述和链接
 				var wikiDescription = response2[2][0];	
 				var wikiLink = response2[3][0];
-
 				contentString += '<br>' + wikiDescription + '<br>Check more on wikipedia:<br><a href="' + 
 								wikiLink + '" target="_blank">' + wikiLink + ' </a></div>';
 
@@ -105,6 +122,8 @@ function initApp() {
 				view.map.panTo(markerLatlng);
 
 			})
+
+			//任一API获取失败，处理失败信息
 		   .fail(function() {
 		   		contentString += '<h2>LOADING DATA HAS FAILED!</h2><br>' +
 		   						'<span>Unable to load information data from Flickr or Wikipedia, ' +
@@ -123,7 +142,7 @@ function initApp() {
 		}
 
 
-
+		//marker的构造函数，除了创建marker的option，添加进markers数组，并为其绑上点击事件
 		self.createMarkers = function(lat, lng, title, id) {
 			var markersOption = {
 				position: new google.maps.LatLng(lat, lng),
@@ -150,6 +169,7 @@ function initApp() {
 			return markersOption;
 		};
 
+		//创建marker
 		self.positions = [
 			new self.createMarkers(37.835637, -122.476808, 'Bay Area Discovery Museum', 'p1'),
 			new self.createMarkers(37.795618, -122.279181, 'Port of Oakland', 'p2'),
@@ -162,6 +182,8 @@ function initApp() {
 			new self.createMarkers(37.733164, -122.505170, 'San Francisco Zoo', 'p9')
 		];
 
+		//为search注册一个subscribe方法，响应Observable监控的文本框输入变化
+		//执行筛选操作，返回地点子集，设置符合子集的marker的可见性，并刷新列表
 		self.search.subscribe(function(newValue) {
 			newValue = newValue.toLowerCase();
 			var slice = false;
@@ -186,11 +208,13 @@ function initApp() {
 			}
 		});		
 
+		//点击文本框旁边的view all按键，清空监控属性，以此恢复默认的完整列表
 		self.clearInput = function() {
 			self.search('');
 		}
 	};
 
+	//实例化一个视图模型，绑定到页面
 	var view = new ViewModel();
 	ko.applyBindings(view);
 }
