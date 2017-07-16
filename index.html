@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neighborhood Map | Some Locations in CA</title>
+<meta name="author" content="terada">
+<meta name="description" content="Neighborhood map of Udacity frontend project">
+<link rel="stylesheet" href="map-app-css/index.css">
+</head>
+<body>
+<div class="content">
+	<div class="nav active">
+		<span class="title">Locations in CA</span>
+		<div class="sidebar-search">
+			<input id="location-text" type="text" data-bind="value:search,valueUpdate:'afterkeydown'" placeholder="Station location...">
+			<input id="location-all" type="button" value="View All" data-bind="click: clearInput">
+		</div>
+		<div id="location-lists">
+			<ul data-bind="foreach: markers">
+				<a data-bind="click: function(data, event) { $parent.updateList(mark_id, data, event) }, attr: {href: mark_id }">
+					<li data-bind="text: title, visible:getVisible()"></li>
+				</a>
+			</ul>
+		</div>
+
+	</div>
+	<a href="#" class="toggle-nav">&#9776;</a>
+	<div id="map"></div>
+</div>
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/knockout-3.4.2.js"></script>
+<script src="js/app.js"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5gME468cY-tSWsDBYFVIbZCn2bvBP8xw&v=3&callback=initApp"></script>
+<script>
+	jQuery(document).ready(function() {
+	    jQuery('.toggle-nav').click(function(e) {
+	        jQuery(this).toggleClass('active');
+	        jQuery('.nav').toggleClass('active');
+	 
+	        e.preventDefault();
+	    });
+	});
+</script>
+</body>
+</html>
