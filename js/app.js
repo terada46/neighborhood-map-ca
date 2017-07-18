@@ -39,17 +39,17 @@ function initApp() {
 			if (mark_id != null) {
 				for (var i = 0; i < self.markers().length; i++) {
 					if (self.markers()[i].mark_id === mark_id) {			
-						var markerImage = {
-							url: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF42',
-							size: new google.maps.Size(21, 34),
-							origin: new google.maps.Point(0, 0),
-							anchor: new google.maps.Point(10, 44),
-							scaledSize: new google.maps.Size(22,35)
-						};
+						// var markerImage = {
+						// 	url: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF42',
+						// 	size: new google.maps.Size(21, 34),
+						// 	origin: new google.maps.Point(0, 0),
+						// 	anchor: new google.maps.Point(10, 44),
+						// 	scaledSize: new google.maps.Size(22,35)
+						// };
 						selectedMarker = self.markers()[i];
-						selectedMarker.setIcon(markerImage);
+						selectedMarker.setIcon(highlightedIcon);
 					} else {
-						self.markers()[i].setIcon();
+						self.markers()[i].setIcon(defaultIcon);
 					}
 				};
 			} else {
@@ -57,7 +57,7 @@ function initApp() {
 			//创建marker时绑定点击事件，仅传递marker参数，直接以此marker为所选marker
 				selectedMarker = marker;
 				for (var i = 0; i < self.markers().length; i++) {
-						self.markers()[i].setIcon();
+						self.markers()[i].setIcon(defaultIcon);
 				};
 			};
 
@@ -85,7 +85,6 @@ function initApp() {
 			)
 			//成功获取后处理数据，提取相片、描述和链接，创建infowindow里显示的html
 			.then(function(result1, result2) { 
-				console.log(result2);
 				var response1 = result1[2].responseJSON;
 				var response2 = result2[2].responseJSON;
 				if (response1.stat == 'ok') {
@@ -149,13 +148,15 @@ function initApp() {
 				title: title,
 				visible: true,
 				map: self.map,
-				mark_id: id
+				mark_id: id,
+				icon: defaultIcon
 			};
 			self.markers.push(new google.maps.Marker(markersOption));
 			var thisMarker = self.markers().length - 1;
 			self.markers()[thisMarker].setAnimation(null);
 			self.markers()[thisMarker].addListener('click', function() {
 				var marker = this;
+				marker.setIcon(defaultIcon);
 				if (marker.getAnimation() !== null) {
 					marker.setAnimation(null);
 				} else {
@@ -213,6 +214,26 @@ function initApp() {
 			self.search('');
 		}
 	};
+
+	//封装生成marker不同颜色图标的方法
+	function makeMarkerIcon(markerColor) {
+	    var markerImage = new google.maps.MarkerImage(
+	        'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+	        '|40|_|%E2%80%A2',
+	        new google.maps.Size(21, 34),
+	        new google.maps.Point(0, 0),
+	        new google.maps.Point(10, 34),
+	        new google.maps.Size(21,34));
+	    	return markerImage;
+	};
+
+	//处理加载Google Map出错提示
+	function mapError() {
+  		alert('Google Map initialized Error');
+	};
+
+	var defaultIcon = makeMarkerIcon('09f');
+	var highlightedIcon = makeMarkerIcon('FF3');
 
 	//实例化一个视图模型，绑定到页面
 	var view = new ViewModel();
