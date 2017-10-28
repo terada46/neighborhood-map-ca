@@ -2,9 +2,9 @@
 
 此项目来自优达学诚(UDACITY)的前端开发纳米学位课程的街区地图应用项目，基于Javascript编写的。项目内容为展示美国San Francisco的一些著名地点。
 
-![APP PREVIEW](https://raw.githubusercontent.com/terada46/neighborhood-map-ca/master/image/app_preview.PNG)
+![APP SCREENSHOP](https://user-images.githubusercontent.com/28306165/32131562-2977d7a8-bbe4-11e7-9e20-3f3792bf7676.PNG)
 
-## 运行网站应用
+## 运行应用
 
   - 从Git下载此应用 https://github.com/terada46/neighborhood-map-ca
   - 打开index.html即可看到地图展示。
